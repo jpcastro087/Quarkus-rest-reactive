@@ -31,12 +31,28 @@ public class FinancialResource {
         return stockMarketAction;
     }
 
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("reactive/repository")
+    public Uni<StockMarketAction> createReactiveRepository(StockMarketActionRequest request) {
+        return financialService.createStockMarketActionReactiveFromRepository(request);
+    }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("reactive")
     public Uni<List<PanacheEntityBase>> getStockMarketActionsReactive() {
-        return financialService.getStockMarketActions();
+        return financialService.findAll();
     }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("reactive/repository")
+    public Uni<List<StockMarketAction>> getStockMarketActionsReactiveRepository() {
+        return financialService.findAllRepository();
+    }
+
+
 
 
 }

@@ -18,6 +18,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.financial.client.FinnHubClient;
 import org.financial.domain.StockMarketAction;
+import org.financial.repository.FinancialRepository;
 import org.financial.request.StockMarketActionRequest;
 import org.financial.response.QuoteResponse;
 
@@ -30,6 +31,9 @@ public class FinancialService {
     private WebClient webClient;
     @Inject
     private Vertx vertx;
+
+    @Inject
+    FinancialRepository financialRepository;
 
     @PostConstruct
     void initializate() {
@@ -87,33 +91,40 @@ public class FinancialService {
                 ).flatMap(responseUni -> responseUni);
     }
 
-  /*  public Uni<Response> createStockMarketActionReactive(StockMarketActionRequest request) {
+    @WithTransaction
+    public Uni<StockMarketAction> createStockMarketActionReactiveFromRepository(StockMarketActionRequest request) {
+        return webClient.get(443, "finnhub.io", "/api/v1/quote")
+                .setQueryParam("symbol", "AAPL")
+                .setQueryParam("token", "cojvlkpr01qq4pku97e0cojvlkpr01qq4pku97eg")
+                .ssl(true)
+                .send()
+                .onFailure().invoke( response -> {
+                            System.err.println(response.getMessage());
+                        }
+                ).onItem().transform(
+                        response -> {
+                            String symbol = request.getSymbol();
+                            QuoteResponse quoteResponse = response.bodyAsJson(QuoteResponse.class);
+                            StockMarketAction stockMarketAction = parseToStockMarketAction(quoteResponse, symbol);
 
+                            return financialRepository.persist(stockMarketAction).onItem().transform(response2 -> {
+                                return response2;
+                            });
 
-        // Crear una nueva instancia de StockMarketAction
-        StockMarketAction stockMarketAction = new StockMarketAction();
+                        }
+                ).flatMap(responseUni -> responseUni);
+    }
 
-        // Llenar el objeto con propiedades
-        stockMarketAction.setSymbol("AAPL");
-        stockMarketAction.setClosePrice(150.50);
-        stockMarketAction.setAbsoluteChange(2.50);
-        stockMarketAction.setPercentageChange(1.68);
-        stockMarketAction.setHighPrice(152.75);
-        stockMarketAction.setLowPrice(149.80);
-        stockMarketAction.setOpenPrice(149.75);
-        stockMarketAction.setPreviousClosePrice(148.00);
-        stockMarketAction.setTimestamp(System.currentTimeMillis());
-
-        return Panache.withTransaction(stockMarketAction::persist)
-                .replaceWith(
-                        Response.ok(stockMarketAction).status(Response.Status.CREATED)::build
-                );
-
-    }*/
 
     @WithSession
-    public Uni<List<PanacheEntityBase>> getStockMarketActions() {
+    public Uni<List<PanacheEntityBase>> findAll() {
         return StockMarketAction.listAll();
+    }
+
+
+    @WithSession
+    public Uni<List<StockMarketAction>> findAllRepository() {
+        return financialRepository.listAll();
     }
 
 
