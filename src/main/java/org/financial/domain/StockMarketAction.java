@@ -1,16 +1,12 @@
 package org.financial.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.quarkus.hibernate.reactive.panache.PanacheEntity;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import lombok.Data;
 
 @Entity
 @Data
-public class StockMarketAction {
-    @Id
-    @GeneratedValue
+public class StockMarketAction extends PanacheEntity {
     private Long id;
     private String symbol;
     private double closePrice;
@@ -21,4 +17,18 @@ public class StockMarketAction {
     private double openPrice;
     private double previousClosePrice;
     private long timestamp;
+
+
+  /*  public static Uni<StockMarketAction> addProduct(StockMarketAction stockMarketAction) {
+
+
+        return Panache
+                .withTransaction(stockMarketAction::persist)
+                .replaceWith(stockMarketAction)
+                .ifNoItem()
+                .after(Duration.ofMillis(10000))
+                .fail()
+                .onFailure()
+                .transform(t -> new IllegalStateException(t));
+    }*/
 }
