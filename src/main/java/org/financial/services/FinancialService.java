@@ -69,7 +69,7 @@ public class FinancialService {
 
     public Uni<Response> createStockMarketActionReactive(StockMarketActionRequest request) {
         return webClient.get(443, "finnhub.io", "/api/v1/quote")
-                .setQueryParam("symbol", "AAPL")
+                .setQueryParam("symbol", request.getSymbol())
                 .setQueryParam("token", "cojvlkpr01qq4pku97e0cojvlkpr01qq4pku97eg")
                 .ssl(true)
                 .send()
